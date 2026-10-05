@@ -1114,8 +1114,7 @@ function renderDetections(pooled) {
     const commonName = p.commonNameI18n || p.commonName || `Class ${p.index}`;
     const scientificName = p.scientificName || "";
     const key = scientificName || `idx-${p.index}`;
-    const imgUrl = `https://birdnet.cornell.edu/api2/bird/${encodeURIComponent(scientificName)}.webp`;
-    const fallbackImgUrl = `${window.PATH_PREFIX || "/"}img/dummy.webp`;
+    const imgUrl = `${window.PATH_PREFIX || "/"}img/dummy.webp`;
 
     newKeys.add(key);
     let cardCol = existingCards.get(key);
@@ -1143,8 +1142,7 @@ function renderDetections(pooled) {
               <img src="${imgUrl}" 
                    alt="${commonName}"
                    loading="lazy"
-                   style="width: 100%; height: 100%; object-fit: cover;"
-                   onerror="this.onerror=null; this.src='${fallbackImgUrl}';">
+                   style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div class="card-body py-2 px-3 flex-grow-1">
               <div class="d-flex justify-content-between align-items-start mb-1">
@@ -1157,17 +1155,50 @@ function renderDetections(pooled) {
               <div class="small text-muted border-top pt-2 mt-1 geo-info">
                 ${geoInfo ? `<i class="bi bi-geo-alt me-1"></i>${geoInfo}` : ""}
               </div>
+              ${birdLinksHtml(scientificName)}
             </div>
           </div>
         </div>
       `;
       container.appendChild(cardCol);
+      hydrateBirdCard(cardCol, scientificName);
     }
   });
 
   // Remove old cards
   existingCards.forEach((node, key) => {
     if (!newKeys.has(key)) node.remove();
+  });
+}
+
+/**
+ * Builds the external link buttons shown in a bird card footer.
+ */
+function birdLinksHtml(scientificName) {
+  if (!scientificName || !window.BirdEnricher) return "";
+  const wiki = window.BirdEnricher.wikiPageUrl(scientificName);
+  const inat = `https://www.inaturalist.org/taxa/search?q=${encodeURIComponent(scientificName)}`;
+  return `<div class="bird-links d-flex gap-1 mt-2">
+    <a class="btn btn-sm btn-outline-secondary py-0 px-1 bird-link-wiki" href="${wiki}" target="_blank" rel="noopener noreferrer" title="Wikipedia" aria-label="Wikipedia"><i class="bi bi-wikipedia"></i></a>
+    <a class="btn btn-sm btn-outline-success py-0 px-1 bird-link-inat" href="${inat}" target="_blank" rel="noopener noreferrer" title="iNaturalist" aria-label="iNaturalist"><i class="bi bi-binoculars"></i></a>
+  </div>`;
+}
+
+/**
+ * Loads the image and exact external links for a card (async, cached).
+ */
+function hydrateBirdCard(cardEl, scientificName) {
+  if (!cardEl || !scientificName || !window.BirdEnricher) return;
+  window.BirdEnricher.enrich(scientificName).then(info => {
+    const img = cardEl.querySelector("img");
+    if (img && info.imageUrl) {
+      img.onerror = () => { img.onerror = null; img.src = window.BirdEnricher.fallbackImage(); };
+      img.src = info.imageUrl;
+    }
+    const w = cardEl.querySelector(".bird-link-wiki");
+    if (w && info.wikiUrl) w.href = info.wikiUrl;
+    const i = cardEl.querySelector(".bird-link-inat");
+    if (i && info.inatUrl) i.href = info.inatUrl;
   });
 }
 
@@ -1205,8 +1236,7 @@ function renderExploreList(list) {
   sorted.forEach(bird => {
     const scorePct = (bird.geoscore * 100).toFixed(1);
     const common = bird.commonNameI18n || bird.commonName;
-    const imgUrl = `https://birdnet.cornell.edu/api2/bird/${encodeURIComponent(bird.scientificName)}.webp`;
-    const fallbackImgUrl = `${window.PATH_PREFIX || "/"}img/dummy.webp`;
+    const imgUrl = `${window.PATH_PREFIX || "/"}img/dummy.webp`;
     
     const col = document.createElement("div");
     col.className = "col-md-6 col-lg-4";
@@ -1217,8 +1247,7 @@ function renderExploreList(list) {
             <img src="${imgUrl}" 
                  alt="${common}"
                  loading="lazy"
-                 style="width: 100%; height: 100%; object-fit: cover;"
-                 onerror="this.onerror=null; this.src='${fallbackImgUrl}';">
+                 style="width: 100%; height: 100%; object-fit: cover;">
           </div>
           <div class="card-body py-2 px-3 flex-grow-1">
             <div class="d-flex justify-content-between align-items-start mb-1">
@@ -1235,11 +1264,13 @@ function renderExploreList(list) {
                 <div class="progress-bar bg-success" role="progressbar" style="width: ${scorePct}%" aria-valuenow="${scorePct}" aria-valuemin="0" aria-valuemax="100"></div>
               </div>
             </div>
+            ${birdLinksHtml(bird.scientificName)}
           </div>
         </div>
       </div>
     `;
     container.appendChild(col);
+    hydrateBirdCard(col, bird.scientificName);
   });
 }
 
