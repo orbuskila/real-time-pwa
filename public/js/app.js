@@ -1115,6 +1115,7 @@ function renderDetections(pooled) {
     const scientificName = p.scientificName || "";
     const key = scientificName || `idx-${p.index}`;
     const imgUrl = `https://birdnet.cornell.edu/api2/bird/${encodeURIComponent(scientificName)}.webp`;
+    const fallbackImgUrl = `${window.PATH_PREFIX || "/"}img/dummy.webp`;
 
     newKeys.add(key);
     let cardCol = existingCards.get(key);
@@ -1143,7 +1144,7 @@ function renderDetections(pooled) {
                    alt="${commonName}"
                    loading="lazy"
                    style="width: 100%; height: 100%; object-fit: cover;"
-                   onerror="this.onerror=null; this.src='img/dummy.webp';">
+                   onerror="this.onerror=null; this.src='${fallbackImgUrl}';">
             </div>
             <div class="card-body py-2 px-3 flex-grow-1">
               <div class="d-flex justify-content-between align-items-start mb-1">
@@ -1205,6 +1206,7 @@ function renderExploreList(list) {
     const scorePct = (bird.geoscore * 100).toFixed(1);
     const common = bird.commonNameI18n || bird.commonName;
     const imgUrl = `https://birdnet.cornell.edu/api2/bird/${encodeURIComponent(bird.scientificName)}.webp`;
+    const fallbackImgUrl = `${window.PATH_PREFIX || "/"}img/dummy.webp`;
     
     const col = document.createElement("div");
     col.className = "col-md-6 col-lg-4";
@@ -1216,7 +1218,7 @@ function renderExploreList(list) {
                  alt="${common}"
                  loading="lazy"
                  style="width: 100%; height: 100%; object-fit: cover;"
-                 onerror="this.onerror=null; this.src='img/dummy.webp';">
+                 onerror="this.onerror=null; this.src='${fallbackImgUrl}';">
           </div>
           <div class="card-body py-2 px-3 flex-grow-1">
             <div class="d-flex justify-content-between align-items-start mb-1">
