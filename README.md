@@ -34,6 +34,8 @@ To install the PWA on your device, open the site in a compatible browser (e.g., 
    ```
 3. Open your browser and navigate to `http://localhost:8080` to view the site.
 
+For deployments hosted under a custom subpath, set `ELEVENTY_PATH_PREFIX` when building (for example, `ELEVENTY_PATH_PREFIX=/birdnet-live-analyzer/ npm run build`). The default remains `/real-time-pwa/` for GitHub Pages.
+
 ## License
 
 - **Source Code**: The source code for this project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
