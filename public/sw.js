@@ -8,7 +8,7 @@
    1. CONFIGURATION & VERSIONING
    ========================================================================== */
 
-const APP_VERSION = "v0.2.0";   // Increment on app code changes
+const APP_VERSION = "v0.2.1";   // Increment on app code changes
 const MODEL_VERSION = "v2.4";    // Increment only when model files change
 
 const APP_CACHE_NAME = `birdnet-app-${APP_VERSION}`;
@@ -42,6 +42,7 @@ const CORE_URLS = [
   "vendor/d3/d3.min.js",
   "vendor/bootstrap/bootstrap.bundle.min.js",
   "js/app.js",
+  "js/birdDataEnricher.js",
   "js/birdnet-worker.js",
   "js/tfjs-4.14.0.min.js",
   "locales/en.json",
@@ -135,7 +136,11 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
 
   // A. External API Images (BirdNET API) -> Cache First
-  if (url.href.startsWith("https://birdnet.cornell.edu/api2/bird/")) {
+  if (
+    url.href.startsWith("https://birdnet.cornell.edu/api2/bird/") ||
+    url.hostname === "upload.wikimedia.org" ||
+    url.hostname === "inaturalist-open-data.s3.amazonaws.com"
+  ) {
     event.respondWith(handleImageFetch(request));
     return;
   }
