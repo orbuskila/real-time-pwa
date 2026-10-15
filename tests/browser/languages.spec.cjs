@@ -28,7 +28,7 @@ async function noHorizontalOverflow(page) {
 async function capture(page, info, lang, screen) {
   const dir = path.resolve('preview-screenshots'); fs.mkdirSync(dir, { recursive: true });
   const file = path.join(dir, info.project.name + '-' + lang + '-' + screen + '.png');
-  await page.screenshot({ path: file, fullPage: true });
+  await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
   await info.attach(screen, { path: file, contentType: 'image/png' });
 }
 for (const lang of ['en', 'he', 'ar']) {
@@ -55,6 +55,7 @@ for (const lang of ['en', 'he', 'ar']) {
     await expect(page.locator('#settingsDrawer')).toContainText(ui.lbl_label_lang);
     await page.keyboard.press('Shift+Tab');
     expect(await page.locator('#settingsDrawer').evaluate(el=>el.contains(document.activeElement))).toBe(true);
+    await page.locator('#settingsDrawer').evaluate(el => el.scrollTop = 0);
     await capture(page,info,lang,'settings');
     await page.keyboard.press('Escape');
     await expect(page.locator('#settingsToggle')).toBeFocused();
