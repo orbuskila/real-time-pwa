@@ -4,6 +4,9 @@ Thumbs.db
 node_modules/
 yarn.lock
 _site/
+preview-screenshots/
+playwright-report/
+test-results/
 dist/
 
 # Logs
