@@ -44,6 +44,8 @@ for (const lang of ['en', 'he', 'ar']) {
     await expect(page.locator('html')).toHaveAttribute('dir', lang === 'en' ? 'ltr' : 'rtl');
     await expect(page.locator('#languageSearch')).toHaveAttribute('placeholder', ui.language_search);
     await noHorizontalOverflow(page);
+    await expect(page.locator('#settingsDrawer')).toBeHidden();
+    await expect(page.locator('.record-label-text')).toHaveText(ui.btn_start);
     await page.locator('#languageSearch').fill(names[lang] === names.he ? 'עברית' : lang === 'ar' ? 'العربية' : 'English');
     await expect(picker.locator('option:checked')).toHaveAttribute('value', lang);
     await page.locator('#languageSearch').fill('');
@@ -56,6 +58,7 @@ for (const lang of ['en', 'he', 'ar']) {
     await capture(page,info,lang,'settings');
     await page.keyboard.press('Escape');
     await expect(page.locator('#settingsToggle')).toBeFocused();
+    await expect(page.locator('#settingsDrawer')).toBeHidden();
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang',lang);
     await expect(picker).toHaveValue(lang);

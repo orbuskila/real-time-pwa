@@ -147,6 +147,7 @@ main { padding-bottom: 4.5rem; }
 
 /* Drawer panel */
 .settings-drawer {
+  visibility: hidden;
   position: fixed;
   top: 0;
   right: 0;
@@ -165,6 +166,7 @@ main { padding-bottom: 4.5rem; }
   -webkit-overflow-scrolling: touch;
 }
 .settings-drawer.open { 
+  visibility: visible;
   transform: translateX(0); 
   box-shadow: -16px 0 40px rgba(15,23,42,0.2);
 }
