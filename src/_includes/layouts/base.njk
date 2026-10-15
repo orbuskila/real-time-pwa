@@ -11,10 +11,12 @@
 
   <link rel="stylesheet" href="{{ '/vendor/bootstrap/bootstrap.min.css' | url }}">
   <link rel="stylesheet" href="{{ '/vendor/bootstrap-icons/bootstrap-icons.css' | url }}">
+  <link id="bootstrapRtl" rel="stylesheet" href="{{ '/vendor/bootstrap/bootstrap.rtl.min.css' | url }}" disabled>
   <link rel="stylesheet" href="{{ '/css/main.css' | url }}">
 
   <script>
     window.PATH_PREFIX = "{{ '/' | url }}";
+    window.BIRDNET_ENGLISH = {{ englishTranslations | safe }};
   </script>
   <script src="{{ '/vendor/d3/d3.min.js' | url }}"></script>
 </head>
@@ -27,6 +29,9 @@
   </main>
 
   <script src="{{ '/vendor/bootstrap/bootstrap.bundle.min.js' | url }}"></script>
+  <script src="{{ '/js/birdDataEnricher.js' | url }}"></script>
+  <script src="{{ '/js/languages.js' | url }}"></script>
+  <script src="{{ '/js/birdDetails.js' | url }}"></script>
   <script src="{{ '/js/app.js' | url }}"></script>
   <script>
     if ('serviceWorker' in navigator) {

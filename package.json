@@ -8,7 +8,8 @@
     "watch": "eleventy --watch"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^3.1.0"
+    "@11ty/eleventy": "^3.1.0",
+    "@playwright/test": "1.64.1"
   },
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",

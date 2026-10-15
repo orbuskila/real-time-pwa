@@ -8,7 +8,7 @@
    1. CONFIGURATION & VERSIONING
    ========================================================================== */
 
-const APP_VERSION = "v0.2.0";   // Increment on app code changes
+const APP_VERSION = "v0.3.1";   // Increment on app code changes
 const MODEL_VERSION = "v2.4";    // Increment only when model files change
 
 const APP_CACHE_NAME = `birdnet-app-${APP_VERSION}`;
@@ -29,6 +29,7 @@ const CORE_URLS = [
   "about/",
   "legal/",
   "share/",
+  "species/",
   "favicon.png",
   "manifest.webmanifest",
   "img/birdnet-logo-circle.png",
@@ -42,6 +43,12 @@ const CORE_URLS = [
   "vendor/d3/d3.min.js",
   "vendor/bootstrap/bootstrap.bundle.min.js",
   "js/app.js",
+  "js/languages.js",
+  "js/birdDetails.js",
+  "locales/he.json",
+  "locales/ar.json",
+  "vendor/bootstrap/bootstrap.rtl.min.css",
+  "js/birdDataEnricher.js",
   "js/birdnet-worker.js",
   "js/tfjs-4.14.0.min.js",
   "locales/en.json",
@@ -135,7 +142,11 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
 
   // A. External API Images (BirdNET API) -> Cache First
-  if (url.href.startsWith("https://birdnet.cornell.edu/api2/bird/")) {
+  if (
+    url.href.startsWith("https://birdnet.cornell.edu/api2/bird/") ||
+    url.hostname === "upload.wikimedia.org" ||
+    url.hostname === "inaturalist-open-data.s3.amazonaws.com"
+  ) {
     event.respondWith(handleImageFetch(request));
     return;
   }
@@ -158,6 +169,14 @@ self.addEventListener("fetch", (event) => {
   }
 
   // C. Core App Assets -> Stale-While-Revalidate
+  // A precached Response carries its original URL without runtime parameters.
+  // Give configured workers a fresh Response so their location retains the
+  // requested tf/root/lang query, including when the app is offline.
+  if (rel === 'js/birdnet-worker.js' && url.search) {
+    event.respondWith(handleConfiguredWorker(request));
+    return;
+  }
+
   if (CORE_URLS.includes(rel)) {
     event.respondWith(handleStaleWhileRevalidate(request, APP_CACHE_NAME, rel));
     return;
@@ -183,6 +202,16 @@ async function handleImageFetch(request) {
   } catch {
     return new Response("", { status: 404 }); // Fail silently
   }
+}
+
+async function handleConfiguredWorker(request) {
+  const cache = await caches.open(APP_CACHE_NAME);
+  const response = await cache.match('js/birdnet-worker.js') || await fetch(request);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
 }
 
 async function handleCacheFirst(request, cacheName, relPath) {

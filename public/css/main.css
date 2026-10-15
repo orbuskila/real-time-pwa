@@ -147,6 +147,7 @@ main { padding-bottom: 4.5rem; }
 
 /* Drawer panel */
 .settings-drawer {
+  visibility: hidden;
   position: fixed;
   top: 0;
   right: 0;
@@ -165,6 +166,7 @@ main { padding-bottom: 4.5rem; }
   -webkit-overflow-scrolling: touch;
 }
 .settings-drawer.open { 
+  visibility: visible;
   transform: translateX(0); 
   box-shadow: -16px 0 40px rgba(15,23,42,0.2);
 }
@@ -181,3 +183,20 @@ body.drawer-open .record-btn {
   pointer-events: none;
   transition: opacity 0.2s;
 }
+
+.language-picker { width: min(100%, 23rem); margin-inline-start: 1rem; }
+.language-picker input, .language-picker select, .bird-links a { min-height: 44px; }
+.card-body { min-width: 0; overflow-wrap: anywhere; }
+.card-title { white-space: normal; }
+.bird-links { flex-wrap: wrap; }
+#settingsToggle, #settingsClose { min-width: 44px; min-height: 44px; }
+[lang="la"] { direction: ltr; unicode-bidi: isolate; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+[dir="rtl"] .settings-drawer { right: auto; left: 0; transform: translateX(-100%); }
+[dir="rtl"] .settings-drawer.open { transform: translateX(0); }
+.live-spectrogram-canvas, #spectrogramAxis { direction: ltr; }
+.species-dialog { width: min(94vw, 42rem); max-height: 90dvh; overflow: auto; border: 0; border-radius: 1rem; padding: 1.5rem; }
+.species-dialog::backdrop { background: #0009; }
+.species-dialog img { max-width: 100%; max-height: 250px; object-fit: contain; }
+.species-dialog a, .species-dialog button { min-height: 44px; }
+@media (max-width: 575px) { .language-picker { margin-inline-start: 0; width: 100%; } }

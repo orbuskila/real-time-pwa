@@ -23,7 +23,7 @@ permalink: "/"
       type="button"
       aria-expanded="false"
       aria-controls="settingsDrawer"
-      aria-label="Toggle settings"
+      aria-label="Toggle settings" data-i18n-aria="settings_title"
     >
       <i class="bi bi-gear-fill fs-4"></i>
     </button>
@@ -43,7 +43,7 @@ permalink: "/"
 <aside id="settingsDrawer" class="settings-drawer" aria-hidden="true">
   <div class="settings-header d-flex justify-content-between align-items-center mb-4">
     <h5 class="m-0" data-i18n="settings_title">Settings</h5>
-    <button type="button" class="btn-close" id="settingsClose" aria-label="Close"></button>
+    <button type="button" class="btn-close" id="settingsClose" aria-label="Close" data-i18n-aria="btn_close"></button>
   </div>
   
   <div class="settings-drawer-body">
@@ -65,17 +65,6 @@ permalink: "/"
 
     <div class="row g-3">
       <div class="col-12">
-        <label for="uiLangSelect" class="form-label" data-i18n="lbl_ui_lang">App Language</label>
-        <select id="uiLangSelect" class="form-select">
-          <option value="en">English</option>
-          <option value="de">Deutsch</option>
-          <option value="fr">Français</option>
-          <option value="it">Italiano</option>
-          <option value="es">Español</option>
-          <option value="pt">Português</option>
-          <option value="nl">Nederlands</option>
-          <option value="ru">Русский</option>
-        </select>
       </div>
 
       <div class="col-12">
@@ -232,6 +221,6 @@ permalink: "/"
   <span class="record-icon"></span>
   <span class="record-label d-inline-flex align-items-center gap-2">
     <i class="bi bi-mic-fill"></i>
-    <span class="record-label-text">Start</span>
+    <span class="record-label-text" data-i18n="btn_start">Start</span>
   </span>
 </button>

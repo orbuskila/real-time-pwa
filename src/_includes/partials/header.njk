@@ -7,7 +7,7 @@
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
             data-bs-target="#mainNav" aria-controls="mainNav"
-            aria-expanded="false" aria-label="Toggle navigation">
+            aria-expanded="false" aria-label="Toggle navigation" data-i18n-aria="toggle_navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -25,7 +25,15 @@
         <li class="nav-item">
           <a class="nav-link{% if page.url == '/share/' %} active{% endif %}" href="{{ '/share/' | url }}" data-i18n="nav_share">Share</a>
         </li>
+        <li class="nav-item"><a class="nav-link" href="https://donations.orwebcraft.com/birds-on-earth-birdnet-live-map/" data-i18n="map_link">Birds on Earth</a></li>
       </ul>
     </nav>
+    <div class="language-picker text-light py-2">
+      <label for="languageSearch" class="small" data-i18n="language_search">Find a language</label>
+      <input id="languageSearch" type="search" class="form-control" autocomplete="off" data-i18n-placeholder="language_search" placeholder="Find a language" aria-controls="languageSelect">
+      <label for="languageSelect" class="small" data-i18n="lbl_ui_lang">App Language</label>
+      <select id="languageSelect" data-language-select class="form-select" aria-describedby="languageAvailability"></select>
+      <small id="languageAvailability" role="status"></small>
+    </div>
   </div>
 </header>

@@ -96,5 +96,19 @@
   "share_title": "Share BirdNET Live",
   "share_desc": "Scan this code to open the app on another device.",
   "share_btn_link": "Share Link",
-  "share_msg_text": "Check out this real-time bird ID app!"
+  "share_msg_text": "Check out this real-time bird ID app!",
+  "language_search": "Find a language",
+  "language_available": "UI translations available. Species content depends on source coverage.",
+  "language_fallback": "Interface shown in English. Species content uses the selected language when available.",
+  "toggle_navigation": "Toggle navigation",
+  "map_link": "Birds on Earth",
+  "species_details": "Species details",
+  "species_loading": "Loading species information…",
+  "species_no_description": "No description available from the sources.",
+  "species_english_fallback": "English source shown because a translation is unavailable.",
+  "image_source": "Image source and credits",
+  "species_recordings": "Find bird recordings",
+  "species_recordings_hint": "Recordings open on xeno-canto; availability varies by species.",
+  "species_share": "Share this species card",
+  "species_intro": "Open a species link from Birds on Earth or choose a bird in Explore to see its names, sources and recordings."
 }
