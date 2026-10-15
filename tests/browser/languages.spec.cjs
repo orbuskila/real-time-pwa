@@ -6,7 +6,7 @@ const names = { en: 'House sparrow', he: 'דרור הבית', ar: 'عصفور د
 // Deterministic species fixtures exercise the real enrichment/DOM code. Live source
 // availability is checked separately; captions identify fixture-backed screenshots.
 async function speciesFixtures(page) {
-  await page.route(/https:\/\/(en|he|ar)\.wikipedia\.org\/(w\/api\.php|api\/rest_v1\/page\/summary\/)/, async route => {
+  await page.context().route(/https:\/\/(en|he|ar)\.wikipedia\.org\/(w\/api\.php|api\/rest_v1\/page\/summary\/)/, async route => {
     const url = new URL(route.request().url());
     const lang = url.hostname.split('.')[0];
     const data = url.pathname.includes('/w/api.php')
@@ -14,11 +14,16 @@ async function speciesFixtures(page) {
       : { extract: { en: 'Preview species: the house sparrow is a small bird commonly found near people.', he: 'מין לדוגמה בתצוגה המקדימה: דרור הבית הוא ציפור קטנה הנפוצה בקרבת האדם.', ar: 'نوع تجريبي للمعاينة: العصفور الدوري طائر صغير شائع قرب مساكن الإنسان.' }[lang], thumbnail: { source: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/House_sparrow_male_in_Prospect_Park_%2853532%29.jpg/330px-House_sparrow_male_in_Prospect_Park_%2853532%29.jpg' } };
     await route.fulfill({ json: data, headers: { 'access-control-allow-origin': '*' } });
   });
-  await page.route('https://www.wikidata.org/wiki/Special:EntityData/Q14683.json', route => route.fulfill({json:{entities:{Q14683:{claims:{P225:[{mainsnak:{datavalue:{value:'Passer domesticus'}}}]}}}},headers:{'access-control-allow-origin':'*'}}));
-  await page.route('https://api.inaturalist.org/**', route => route.fulfill({ json: { results: [{ id: 13858, name: 'Passer domesticus' }] }, headers: { 'access-control-allow-origin': '*' } }));
+  await page.context().route('https://www.wikidata.org/wiki/Special:EntityData/Q14683.json', route => route.fulfill({json:{entities:{Q14683:{claims:{P225:[{mainsnak:{datavalue:{value:'Passer domesticus'}}}]}}}},headers:{'access-control-allow-origin':'*'}}));
+  await page.context().route('https://api.inaturalist.org/**', route => route.fulfill({ json: { results: [{ id: 13858, name: 'Passer domesticus' }] }, headers: { 'access-control-allow-origin': '*' } }));
 }
 async function noHorizontalOverflow(page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  const result = await page.evaluate(() => ({
+    scroll: document.documentElement.scrollWidth,
+    viewport: window.innerWidth,
+    outside: [...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&(r.right>innerWidth+1||r.left< -1);}).slice(0,8).map(el=>el.tagName+'.'+el.className),
+  }));
+  expect(result.scroll <= result.viewport + 1, JSON.stringify(result)).toBe(true);
 }
 async function capture(page, info, lang, screen) {
   const dir = path.resolve('preview-screenshots'); fs.mkdirSync(dir, { recursive: true });
@@ -61,6 +66,7 @@ for (const lang of ['en', 'he', 'ar']) {
     await capture(page,info,lang,'about');
     await page.goto('explore/');
     await expect(page.locator('h1')).toHaveText(ui.msg_explore_title);
+    await expect(page.locator('[data-i18n="msg_occurrence_hint_post"]')).toHaveText(ui.msg_occurrence_hint_post);
     await noHorizontalOverflow(page);
     await page.goto('share/');
     await expect(page.locator('h1')).toHaveText(ui.share_title);
@@ -72,6 +78,7 @@ for (const lang of ['en', 'he', 'ar']) {
     await expect(dialog).toContainText(names.en);
     await expect(dialog).toContainText(names[lang]);
     await expect(dialog).toContainText('Passer domesticus');
+    await expect(dialog).toContainText({en:'Preview species:',he:'מין לדוגמה בתצוגה המקדימה:',ar:'نوع تجريبي للمعاينة:'}[lang]);
     await expect(dialog.getByRole('link',{name:ui.species_recordings,exact:true})).toHaveAttribute('href',/xeno-canto\.org/);
     const share = dialog.getByRole('textbox',{name:ui.species_share});
     await expect(share).toHaveValue(new RegExp('/species/\\?species=Passer\\+domesticus&lang='+lang));

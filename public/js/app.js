@@ -188,7 +188,7 @@ function setupLanguageSelector() {
 function updateUIText() {
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
-    if (translations[key]) {
+    if (typeof translations[key] === 'string') {
       el.innerHTML = translations[key];
     }
   });

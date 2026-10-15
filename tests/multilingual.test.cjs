@@ -45,6 +45,11 @@ test('partial pre-existing locale falls back per key to English',async()=>{
  const a=app(async url=>url.includes('/de.')?{ok:true,json:async()=>({btn_start:'Starten'})}:localeFetch(url));
  await a.run("loadTranslations('de')");assert.equal(a.run("t('btn_start')"),'Starten');assert.equal(a.run("t('species_details')"),'Species details');
 });
+test('an intentionally empty Arabic translation clears the English fallback text',async()=>{
+ const a=app(localeFetch);const el={innerHTML:' probability',getAttribute:()=> 'msg_occurrence_hint_post'};
+ a.document.querySelectorAll=selector=>selector==='[data-i18n]'?[el]:[];
+ await a.run("loadTranslations('ar')");assert.equal(el.innerHTML,'');
+});
 test('late translation response cannot overwrite a newer selection',async()=>{
  let release;const hold=new Promise(r=>release=r);
  const a=app(async url=>{if(url.includes('/he.'))await hold;return localeFetch(url);});
@@ -119,4 +124,12 @@ test('species dialog renders source text without HTML, retains bilingual names a
 test('species page has no analyzer element and worker remains gated to Live/Explore',()=>{
  assert.ok(!source('src/species.njk').includes('recordButton'));
  assert.match(source('public/js/app.js'),/if \(!isLive && !isExplore\) return;\s+initWorker\(\)/);
+});
+test('a precached worker response cannot replace its requested configuration URL',async()=>{
+ const cached=new Response('/* worker source */',{headers:{'Content-Type':'text/javascript'}});
+ Object.defineProperty(cached,'url',{value:'https://example.org/birdnet-live-analyzer/js/birdnet-worker.js'});
+ const context=vm.createContext({self:{addEventListener:()=>{}},caches:{open:async()=>({match:async()=>cached})},Response,Request,URL,fetch:async()=>{throw Error('offline');},console});
+ vm.runInContext(source('public/sw.js'),context);
+ const result=await vm.runInContext("handleConfiguredWorker(new Request('https://example.org/birdnet-live-analyzer/js/birdnet-worker.js?tf=%2Fbirdnet-live-analyzer%2Fjs%2Ftfjs-4.14.0.min.js&lang=ar'))",context);
+ assert.equal(result.url,'');assert.equal(await result.text(),'/* worker source */');assert.equal(result.headers.get('Content-Type'),'text/javascript');
 });
