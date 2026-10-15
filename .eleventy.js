@@ -1,4 +1,5 @@
 module.exports = function (eleventyConfig) {
+  eleventyConfig.addGlobalData("englishTranslations", JSON.stringify(require("./public/locales/en.json")).replace(/</g, "\\u003c"));
   const pathPrefix = process.env.ELEVENTY_PATH_PREFIX || "/real-time-pwa/";
 
   // Static (public)
@@ -6,6 +7,8 @@ module.exports = function (eleventyConfig) {
 
   // Prevent Jekyll on GitHub Pages
   eleventyConfig.addPassthroughCopy({ "src/.nojekyll": ".nojekyll" });
+
+  eleventyConfig.addPassthroughCopy({ "node_modules/bootstrap/dist/css/bootstrap.rtl.min.css": "vendor/bootstrap/bootstrap.rtl.min.css" });
 
   // Vendor assets
   eleventyConfig.addPassthroughCopy({

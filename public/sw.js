@@ -8,7 +8,7 @@
    1. CONFIGURATION & VERSIONING
    ========================================================================== */
 
-const APP_VERSION = "v0.2.1";   // Increment on app code changes
+const APP_VERSION = "v0.3.0";   // Increment on app code changes
 const MODEL_VERSION = "v2.4";    // Increment only when model files change
 
 const APP_CACHE_NAME = `birdnet-app-${APP_VERSION}`;
@@ -29,6 +29,7 @@ const CORE_URLS = [
   "about/",
   "legal/",
   "share/",
+  "species/",
   "favicon.png",
   "manifest.webmanifest",
   "img/birdnet-logo-circle.png",
@@ -42,6 +43,11 @@ const CORE_URLS = [
   "vendor/d3/d3.min.js",
   "vendor/bootstrap/bootstrap.bundle.min.js",
   "js/app.js",
+  "js/languages.js",
+  "js/birdDetails.js",
+  "locales/he.json",
+  "locales/ar.json",
+  "vendor/bootstrap/bootstrap.rtl.min.css",
   "js/birdDataEnricher.js",
   "js/birdnet-worker.js",
   "js/tfjs-4.14.0.min.js",

@@ -39,7 +39,7 @@ const SUPPORTED_LABEL_LANGS = Object.keys(LANG_LABELS);
 
 // UI Translation State
 let currentUiLang = "en";
-let translations = {};
+let translations = window.BIRDNET_ENGLISH || {};
 
 /* ==========================================================================
    2. GLOBAL STATE
@@ -85,10 +85,10 @@ let lastSpeciesList = null; // Cache for explore page filtering
    ========================================================================== */
 
 const store = {
-  get: (k, def) => localStorage.getItem(k) ?? def,
-  getFloat: (k, def) => { const v = localStorage.getItem(k); return v === null ? def : parseFloat(v); },
-  getBool: (k, def) => { const v = localStorage.getItem(k); return v === null ? def : v === "true"; },
-  set: (k, v) => localStorage.setItem(k, v)
+  get: (k, def) => { try { return localStorage.getItem(k) ?? def; } catch { return def; } },
+  getFloat: (k, def) => { const v = store.get(k, null); return v === null ? def : parseFloat(v); },
+  getBool: (k, def) => { const v = store.get(k, null); return v === null ? def : v === "true"; },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* Private browsing: keep session settings. */ } }
 };
 
 /**
@@ -134,29 +134,52 @@ function mapBrowserLangToLabelLang(locale) {
 /**
  * Loads UI translations for the specified language.
  */
-async function loadTranslations(lang) {
-  try {
-    const prefix = window.PATH_PREFIX || "/";
-    const response = await fetch(`${prefix}locales/${lang}.json`);
-    if (!response.ok) throw new Error(`Failed to load ${lang} translations`);
-    translations = await response.json();
-    currentUiLang = lang;
-    store.set("bn_ui_lang", lang);
-    updateUIText();
-    
-    // Re-render dynamic lists to apply new translations
-    renderDetections(latestDetections);
-    if (document.getElementById("exploreList")) renderExploreList();
+let translationRequest = 0;
+async function loadTranslations(requested) {
+  const request = ++translationRequest;
+  const lang = BirdLanguages.normalize(requested);
+  const prefix = window.PATH_PREFIX || '/';
+  const get = async code => {
+    try { const r = await fetch(prefix + 'locales/' + code + '.json'); return r.ok ? await r.json() : {}; }
+    catch { return {}; }
+  };
+  const [english, localized] = await Promise.all([get('en'), BirdLanguages.ui.has(lang) && lang !== 'en' ? get(lang) : {}]);
+  if (request !== translationRequest) return;
+  translations = { ...window.BIRDNET_ENGLISH, ...english, ...localized };
+  currentUiLang = lang;
+  store.set('bn_ui_lang', lang);
+  document.documentElement.lang = Object.keys(localized).length ? lang : 'en';
+  document.documentElement.dir = BirdLanguages.rtl.has(lang) ? 'rtl' : 'ltr';
+  const rtlSheet = document.getElementById('bootstrapRtl');
+  if (rtlSheet) rtlSheet.disabled = document.documentElement.dir !== 'rtl';
+  updateUIText();
+  document.querySelectorAll('[data-language-select]').forEach(el => { el.value = lang; });
+  const note = document.getElementById('languageAvailability');
+  const hasUi = lang === 'en' || Object.keys(localized).length > 0;
+  if (note) { note.textContent = t(hasUi ? 'language_available' : 'language_fallback'); note.lang = hasUi ? lang : 'en'; }
+  document.querySelectorAll('[data-species]').forEach(el => el.remove());
+  renderDetections(latestDetections);
+  if (document.getElementById('exploreList')) renderExploreList();
+  document.dispatchEvent(new CustomEvent('birdnet:language', {detail: lang}));
+}
 
-    // Update selector if it exists
-    const selector = document.getElementById("uiLangSelect");
-    if (selector) selector.value = lang;
-    
-  } catch (e) {
-    console.error("Translation load error:", e);
-    // Fallback to English if not already English
-    if (lang !== "en") loadTranslations("en");
-  }
+function setupLanguageSelector() {
+  const search = document.getElementById('languageSearch');
+  const select = document.getElementById('languageSelect');
+  if (!select) return;
+  const fill = () => {
+    const query = search.value.trim().toLocaleLowerCase();
+    select.replaceChildren();
+    BirdLanguages.languages.filter(l => l.code === currentUiLang || (l.native + ' ' + l.english + ' ' + l.code).toLocaleLowerCase().includes(query)).forEach(l => {
+      const option = new Option(l.native + ' — ' + l.english, l.code);
+      option.lang = l.code; option.dir = 'auto'; select.add(option);
+    });
+    select.value = currentUiLang;
+  };
+  search.addEventListener('input', fill);
+  document.addEventListener('birdnet:language', fill);
+  select.addEventListener('change', () => loadTranslations(select.value));
+  fill();
 }
 
 /**
@@ -170,6 +193,8 @@ function updateUIText() {
     }
   });
   
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
   // Update status text if not currently recording/processing
   // (Dynamic status updates will use the new translation map)
   if (!isListening && !workerReady) {
@@ -254,8 +279,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize Language
   const savedLang = store.get("bn_ui_lang");
-  const browserLang = navigator.language.split("-")[0];
-  const initialLang = savedLang || (["de", "en"].includes(browserLang) ? browserLang : "en");
+  const browserLang = BirdLanguages.normalize(navigator.language);
+  const initialLang = new URLSearchParams(location.search).get('lang') || savedLang || browserLang;
+  setupLanguageSelector();
   loadTranslations(initialLang);
   
   const isLive = !!document.getElementById("recordButton");
@@ -960,14 +986,6 @@ function initUIControls() {
     });
   }
 
-  const uiLangSelect = document.getElementById("uiLangSelect");
-  if (uiLangSelect) {
-    uiLangSelect.value = currentUiLang;
-    uiLangSelect.addEventListener("change", () => {
-      loadTranslations(uiLangSelect.value);
-    });
-  }
-
   const langSelect = document.getElementById("labelLangSelect");
   if (langSelect) {
     langSelect.innerHTML = SUPPORTED_LABEL_LANGS
@@ -1032,6 +1050,7 @@ function setupSettingsToggle() {
 
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
     drawer.setAttribute("aria-hidden", open ? "false" : "true");
+    drawer.inert = !open;
     drawer.classList.toggle("open", open);
     document.body.classList.toggle("drawer-open", open);
     if (overlay) {
@@ -1058,6 +1077,12 @@ function setupSettingsToggle() {
   
   document.addEventListener("keydown", (evt) => {
     if (evt.key === "Escape") setState(false);
+    if (evt.key === 'Tab' && drawer.classList.contains('open')) {
+      const elements = Array.from(drawer.querySelectorAll('button, input, select, a[href]')).filter(el => !el.disabled && el.tabIndex >= 0);
+      const first = elements[0], last = elements[elements.length - 1];
+      if (evt.shiftKey && document.activeElement === first) { evt.preventDefault(); last?.focus(); }
+      else if (!evt.shiftKey && document.activeElement === last) { evt.preventDefault(); first?.focus(); }
+    }
   });
 }
 
@@ -1189,7 +1214,23 @@ function birdLinksHtml(scientificName) {
  */
 function hydrateBirdCard(cardEl, scientificName) {
   if (!cardEl || !scientificName || !window.BirdEnricher) return;
-  window.BirdEnricher.enrich(scientificName).then(info => {
+  // Details are usable immediately, even when a source is slow or unavailable.
+  window.BirdDetails.decorate(cardEl, scientificName, {});
+  if ('IntersectionObserver' in window && !cardEl.dataset.enrichmentVisible) {
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(e => e.isIntersecting)) return;
+      observer.disconnect(); cardEl.dataset.enrichmentVisible = 'true';
+      if (cardEl.isConnected) hydrateBirdCard(cardEl, scientificName);
+    });
+    observer.observe(cardEl);
+    // Removed cards must not leave observers behind after switching languages.
+    document.addEventListener('birdnet:language', () => observer.disconnect(), {once: true});
+    return;
+  }
+  const language = currentUiLang;
+  window.BirdEnricher.enrich(scientificName, language).then(info => {
+    if (language !== currentUiLang || !cardEl.isConnected) return;
+    window.BirdDetails.decorate(cardEl, scientificName, info);
     const img = cardEl.querySelector("img");
     if (img && info.imageUrl) {
       img.onerror = () => { img.onerror = null; img.src = window.BirdEnricher.fallbackImage(); };
@@ -1240,6 +1281,7 @@ function renderExploreList(list) {
     
     const col = document.createElement("div");
     col.className = "col-md-6 col-lg-4";
+    col.dataset.species = bird.scientificName;
     col.innerHTML = `
       <div class="card h-100 border-0 shadow-sm overflow-hidden">
         <div class="d-flex h-100">
