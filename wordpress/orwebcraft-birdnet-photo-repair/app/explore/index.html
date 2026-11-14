@@ -1,0 +1,107 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Explore species</title><link rel="stylesheet" href="/wp-content/plugins/orwebcraft-birdnet-fixed/app/vendor/bootstrap/bootstrap.min.css"><link rel="stylesheet" href="/wp-content/plugins/orwebcraft-birdnet-fixed/app/vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="/wp-content/plugins/orwebcraft-birdnet-fixed/app/css/main.css"><script>window.PATH_PREFIX="/wp-content/plugins/orwebcraft-birdnet-fixed/app/";</script><script src="/wp-content/plugins/orwebcraft-birdnet-fixed/app/vendor/d3/d3.min.js"></script></head><body><header class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand fw-semibold d-flex align-items-center gap-2" href="/wp-content/plugins/orwebcraft-birdnet-photo-repair/app/">
+      <img src="/wp-content/plugins/orwebcraft-birdnet-fixed/app/img/birdnet-logo-circle.png" alt="BirdNET logo" class="navbar-logo">
+      <span data-i18n="app_title">BirdNET Live</span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#mainNav" aria-controls="mainNav"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <nav class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="/wp-content/plugins/orwebcraft-birdnet-photo-repair/app/" data-i18n="nav_live">Live</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/wp-content/plugins/orwebcraft-birdnet-photo-repair/app/explore/" data-i18n="nav_explore">Explore</a>
+        </li>        
+        <li class="nav-item">
+          <a class="nav-link" href="https://birdnet-team.github.io/real-time-pwa/about/" data-i18n="nav_about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://birdnet-team.github.io/real-time-pwa/share/" data-i18n="nav_share">Share</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main><div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0" data-i18n="msg_explore_title">Explore Local Species</h1>
+    <button
+      id="settingsToggle"
+      class="btn btn-link text-secondary text-decoration-none p-0"
+      type="button"
+      aria-expanded="false"
+      aria-controls="settingsDrawer"
+      aria-label="Toggle settings"
+    >
+      <i class="bi bi-gear-fill fs-4"></i>
+    </button>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body bg-light">
+      <div class="d-flex align-items-center gap-3">
+        <i class="bi bi-geo-alt-fill text-primary fs-4"></i>
+        <div>
+          <div id="geoStatusText" class="fw-semibold" data-i18n="status_geo_waiting">Initializing...</div>
+          <div id="geoCoordsText" class="small text-muted">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="exploreList" class="row g-3">
+    <div class="col-12 text-center py-5 text-muted">
+      <div class="spinner-border mb-3" role="status"></div>
+      <p data-i18n="status_loading">Loading model and species list...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Include Settings Drawer (reused structure) -->
+<div id="settingsOverlay" class="settings-overlay" aria-hidden="true"></div>
+<aside id="settingsDrawer" class="settings-drawer" aria-hidden="true">
+  <div class="settings-header d-flex justify-content-between align-items-center mb-4">
+    <h5 class="m-0" data-i18n="settings_title">Settings</h5>
+    <button type="button" class="btn-close" id="settingsClose" aria-label="Close"></button>
+  </div>
+  
+  <div class="settings-drawer-body">
+    <h6 class="text-uppercase text-muted fw-bold mb-3" data-i18n="sec_geomodel">Geomodel</h6>
+    <div class="mb-3 p-3 bg-light rounded-3">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="geoToggle" checked>
+        <label class="form-check-label fw-semibold" for="geoToggle" data-i18n="lbl_use_geo">Use geolocation</label>
+      </div>
+      
+      <div class="mt-3 pt-3 border-top">
+        <label for="geoThresholdRange" class="form-label small text-muted" data-i18n="lbl_occurrence_threshold">Occurrence Threshold</label>
+        <input type="range" class="form-range" id="geoThresholdRange" min="1" max="25" step="1">
+        <div class="form-text small">
+          <span data-i18n="msg_occurrence_hint_pre">Show species with ≥ </span>
+          <span class="form-range-value" id="geoThresholdValue">5%</span>
+          <span data-i18n="msg_occurrence_hint_post"> probability</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="uiLangSelect" class="form-label" data-i18n="lbl_ui_lang">App Language</label>
+      <select id="uiLangSelect" class="form-select">
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="labelLangSelect" class="form-label" data-i18n="lbl_label_lang">Label language</label>
+      <select id="labelLangSelect" class="form-select"></select>
+    </div>
+  </div>
+</aside></main><script src="/wp-content/plugins/orwebcraft-birdnet-fixed/app/vendor/bootstrap/bootstrap.bundle.min.js"></script><script src="/wp-content/plugins/orwebcraft-birdnet-photo-repair/app/js/app.js"></script><script src="/wp-content/plugins/orwebcraft-birdnet-photo-repair/app/js/photos.js"></script></body></html>
